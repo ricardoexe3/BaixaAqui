@@ -5,7 +5,8 @@ interface
 uses
   System.SysUtils,
   Vcl.Dialogs,
-  Vcl.Forms;
+  Vcl.Forms,
+  System.UITypes;
   
  type TModel_Excecoes = class
    private
