@@ -1,6 +1,6 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
-        <ProjectGuid>{D1B0834C-611C-42CD-9490-FBC63197EF04}</ProjectGuid>
+        <ProjectGuid>{429217FF-86D2-4482-A346-098389619B6C}</ProjectGuid>
         <ProjectVersion>18.8</ProjectVersion>
         <FrameworkType>VCL</FrameworkType>
         <MainSource>ProjDownload.dpr</MainSource>
@@ -75,6 +75,8 @@
         <DCC_RemoteDebug>false</DCC_RemoteDebug>
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <VerInfo_Locale>1033</VerInfo_Locale>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
@@ -90,10 +92,23 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
-        <DCCReference Include="uDownload.View.Main.pas">
-            <Form>Form4</Form>
+        <DCCReference Include="View\uDownload.View.Main.pas">
+            <Form>FrmMain</Form>
             <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="View\uDownload.View.Historico.pas">
+            <Form>FrmHistorico</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="Controller\uDownload.Controller.ProcessarDownload.pas"/>
+        <DCCReference Include="Controller\uDownload.Controller.Interfaces.pas"/>
+        <DCCReference Include="Model\uDownload.Model.ProcessarDownload.pas"/>
+        <DCCReference Include="Model\uDownload.Model.Interfaces.pas"/>
+        <DCCReference Include="Model\Conexao\uDownload.Model.Conexao.pas"/>
+        <DCCReference Include="Model\Conexao\uDownload.Model.Interfaces.Conexao.pas"/>
+        <DCCReference Include="Controller\uDownload.Controller.Historico.pas"/>
+        <DCCReference Include="Model\uDownload.Model.Historico.pas"/>
+        <DCCReference Include="Model\Excecoes\uDownload.Model.Excecoes.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
@@ -114,6 +129,10 @@
                 <Source>
                     <Source Name="MainSource">ProjDownload.dpr</Source>
                 </Source>
+                <Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k260.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp260.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+                </Excluded_Packages>
             </Delphi.Personality>
             <Deployment Version="3">
                 <DeployFile LocalName="Win32\Debug\ProjDownload.exe" Configuration="Debug" Class="ProjectOutput">
