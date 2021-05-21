@@ -22,3 +22,15 @@
 20/05/21 23:01:08 - Error: Exception
 20/05/21 23:01:08 - Error: Há um download em andamento!
 20/05/21 23:01:08 - *-----------------------------------*
+21/05/21 00:42:08 - *-----------------------------------*
+21/05/21 00:42:09 - Form: FrmHistorico
+21/05/21 00:42:09 - Caption: Histórico de downloads
+21/05/21 00:42:10 - Error: ESQLiteNativeException
+21/05/21 00:42:10 - Error: [FireDAC][Phys][SQLite] ERROR: no such table: LOGDOWNLOAD
+21/05/21 00:42:11 - *-----------------------------------*
+21/05/21 00:42:23 - *-----------------------------------*
+21/05/21 00:42:24 - Form: FrmHistorico_1
+21/05/21 00:42:24 - Caption: Histórico de downloads
+21/05/21 00:42:25 - Error: ESQLiteNativeException
+21/05/21 00:42:25 - Error: [FireDAC][Phys][SQLite] ERROR: no such table: LOGDOWNLOAD
+21/05/21 00:42:26 - *-----------------------------------*

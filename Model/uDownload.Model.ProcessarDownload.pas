@@ -104,26 +104,36 @@ begin
 
  case tipoMensagem of
 
- tpAlert: begin
-           if Assigned(FThreadIniciaDownload) then
-            begin
-             FThreadIniciaDownload.Synchronize(FThreadIniciaDownload.CurrentThread,
-              procedure
-              begin
-               MessageDlg(value,mtInformation,[mbOk], 0, mbOk);
-              end);
-             Exit;
-            end;
-            MessageDlg(value,mtInformation, [mbOk], 0, mbOk);
-          end;
+  tpAlert: begin
+   if Assigned(FThreadIniciaDownload) then
+    begin
+     FThreadIniciaDownload.Synchronize(FThreadIniciaDownload.CurrentThread,
+      procedure
+      begin
+       MessageDlg(value,mtInformation,[mbOk], 0, mbOk);
+      end);
+     Exit;
+    end;
+    MessageDlg(value,mtInformation, [mbOk], 0, mbOk);
+  end;
 
   tpQuestion: begin
+       if Assigned(FThreadIniciaDownload) then
+        begin
+         FThreadIniciaDownload.Synchronize(FThreadIniciaDownload.CurrentThread,
+          procedure
+          begin
+           FThreadIniciaDownload.Suspended:= MessageDlg(value, mtConfirmation,
+                                                       [mbYes, mbNo], 0, mbYes) = mrYes
+          end);
+          Result := FThreadIniciaDownload.Suspended;
+         Exit;
+        end;
 
-              end;
+       Result := MessageDlg(value, mtConfirmation,
+                           [mbYes, mbNo], 0, mbYes) = mrYes
+      end;
  end;
-
-
-
 end;
 
 procedure TModel_ProcessarDownload.Proc_CriarQuery;
@@ -146,12 +156,12 @@ begin
 
  if FMaxValue = 0 then
   begin
-   Proc_MensagemAlerta('Não há nenhum Download em andamento !');
+   Fn_MensagemAlerta('Não há nenhum Download em andamento !',tpAlert);
    Exit;
   end;
 
  Percent := Fn_RetornaPercentual;
- Proc_MensagemAlerta('Atenção: Download em andamento '+FormatFloat('##',Percent)+'% concluído!');
+ Fn_MensagemAlerta('Atenção: Download em andamento '+FormatFloat('##',Percent)+'% concluído!',tpAlert);
 end;
 
 function TModel_ProcessarDownload.Fn_GetDataSet: TDataSet;
@@ -184,9 +194,8 @@ begin
     Percent := Fn_RetornaPercentual;
     FThreadIniciaDownload.Suspended := true;
 
-    if MessageDlg('Atenção Download em andamento '+FormatFloat('##',Percent)+'% concluído' + #13 +
-                  'Deseja cancelar?', mtConfirmation,
-                  [mbYes, mbNo], 0, mbYes) <> mrYes
+   if not Fn_MensagemAlerta('Atenção Download em andamento '+FormatFloat('##',Percent)+'% concluído' + #13 +
+                            'Deseja cancelar?',tpQuestion)
     then
     begin
      FThreadIniciaDownload.Suspended := False;
@@ -196,15 +205,21 @@ begin
    Result := FThreadIniciaDownload.Suspended;
    if Result then
     begin
+     FThreadIniciaDownload.Synchronize(FThreadIniciaDownload.CurrentThread,
+                                       procedure
+                                       begin
+                                       FAtualizaProgressoEvent(0, 0);
+                                       end
+                                       );
+
      FThreadIniciaDownload.FreeOnTerminate := True;
      TerminateThread(FThreadIniciaDownload.Handle, 0);
      Proc_LimparObjetos;
-     FAtualizaProgressoEvent(0, 0);
     end;
     Exit;
   end;
 
-  Proc_MensagemAlerta('Não há nenhum Download em andamento !');
+  Fn_MensagemAlerta('Não há nenhum Download em andamento !',tpAlert);
 end;
 
 function TModel_ProcessarDownload.Fn_RetornaPercentual: Double;
@@ -240,14 +255,14 @@ begin
  if FURL = EmptyStr then
   begin
    Result := True;
-   Proc_MensagemAlerta('Não foi informado link para download!');
+   Fn_MensagemAlerta('Não foi informado link para download!',tpAlert);
    Exit;
   end;
 
  if Assigned(FThreadIniciaDownload) and Assigned(FIdHTTP) then
   begin
    Result := True;
-   Proc_MensagemAlerta('Há um download em andamento!');
+   Fn_MensagemAlerta('Há um download em andamento!',tpAlert);
    Exit;
   end;
 end;
@@ -356,7 +371,7 @@ begin
  except on Erro:exception do
   begin
    Proc_LimparObjetos;
-   Proc_MensagemAlerta('Falha ao realizar o download:'+Erro.Message);
+   Fn_MensagemAlerta('Falha ao realizar o download:'+Erro.Message,tpAlert);
   end;
   end
 
