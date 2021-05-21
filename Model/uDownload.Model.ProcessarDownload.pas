@@ -36,17 +36,18 @@ private
  FThreadIniciaDownload : TThread;
  procedure Proc_AtualizaDadosBanco;
  procedure Proc_CriarMecanismoGet;
+ procedure Proc_CriarQuery;
  procedure Proc_LimparObjetos;
+ procedure Proc_MensagemAlerta(value:string);
  procedure Proc_ProcessarDownload;
+ function Fn_RetornaPercentual:Double;
+ function Fn_Validacoes:Boolean;
  // Eventos do componente TIdHTTP
  procedure IdHTTP1Work(ASender: TObject; AWorkMode: TWorkMode;
   AWorkCount: Int64);
  procedure IdHTTP1WorkBegin(ASender: TObject; AWorkMode: TWorkMode;
   AWorkCountMax: Int64);
  procedure IdHTTP1WorkEnd(ASender: TObject; AWorkMode: TWorkMode);
- procedure Proc_CriarQuery;
- function Fn_RetornaPercentual:Double;
- function Fn_Validacoes:Boolean;
 public
  function Fn_ExibirMensagemProgresso:iModel_ProcessarDownload;
  function Fn_GetDataSet:TDataSet;
@@ -82,7 +83,8 @@ begin
 
  if Assigned(FThreadIniciaDownload) then
   begin
-   FreeAndNil(FThreadIniciaDownload);
+   FThreadIniciaDownload.FreeOnTerminate := True;
+   TerminateThread(FThreadIniciaDownload.Handle, 0);
   end;
   inherited;
 end;
@@ -93,6 +95,21 @@ begin
   FreeAndNil(FIdHTTP);
   FreeAndNil(FIdSSLIOHandlerSocketOpenSSL);
   FreeAndNil(FdAntiFreeze);
+end;
+
+procedure TModel_ProcessarDownload.Proc_MensagemAlerta(value: string);
+begin
+ if Assigned(FThreadIniciaDownload) then
+  begin
+   FThreadIniciaDownload.Synchronize(FThreadIniciaDownload.CurrentThread,
+    procedure
+    begin
+     MessageDlg(value,mtInformation,[mbOk], 0, mbOk);
+    end);
+   Exit;
+  end;
+
+  MessageDlg(value,mtInformation, [mbOk], 0, mbOk);
 end;
 
 procedure TModel_ProcessarDownload.Proc_CriarQuery;
@@ -115,16 +132,12 @@ begin
 
  if FMaxValue = 0 then
   begin
-   MessageDlg('Não há nenhum Download em andamento !',
-              mtInformation,
-              [mbOk], 0, mbOk);
+   Proc_MensagemAlerta('Não há nenhum Download em andamento !');
    Exit;
   end;
 
  Percent := Fn_RetornaPercentual;
- MessageDlg('Atenção: Download em andamento '+FormatFloat('##',Percent)+'% concluído!',
-            mtInformation,
-            [mbOk], 0, mbOk);
+ Proc_MensagemAlerta('Atenção: Download em andamento '+FormatFloat('##',Percent)+'% concluído!');
 end;
 
 function TModel_ProcessarDownload.Fn_GetDataSet: TDataSet;
@@ -137,11 +150,10 @@ function TModel_ProcessarDownload.Fn_IniciarDownload: iModel_ProcessarDownload;
 begin
  Result := Self;
  if Fn_Validacoes then Exit;
- FThreadIniciaDownload := TThread.CreateAnonymousThread(
-                                                       procedure
-                                                       begin
-                                                        Proc_ProcessarDownload;
-                                                       end);
+ FThreadIniciaDownload := TThread.CreateAnonymousThread(procedure
+                                                        begin
+                                                         Proc_ProcessarDownload;
+                                                        end);
  FThreadIniciaDownload.Start;
 end;
 
@@ -178,10 +190,7 @@ begin
     Exit;
   end;
 
-  MessageDlg('Não há nenhum Download em andamento !',
-             mtInformation,
-             [mbOk], 0, mbOk);
-
+  Proc_MensagemAlerta('Não há nenhum Download em andamento !');
 end;
 
 function TModel_ProcessarDownload.Fn_RetornaPercentual: Double;
@@ -217,14 +226,14 @@ begin
  if FURL = EmptyStr then
   begin
    Result := True;
-   raise Exception.Create('Não foi informado link para download!');
+   Proc_MensagemAlerta('Não foi informado link para download!');
    Exit;
   end;
 
  if Assigned(FThreadIniciaDownload) and Assigned(FIdHTTP) then
   begin
    Result := True;
-   raise Exception.Create('Há um download em andamento!');
+   Proc_MensagemAlerta('Há um download em andamento!');
    Exit;
   end;
 end;
@@ -291,8 +300,8 @@ begin
    FQueryHistorico.FieldByName('DATAFIM').Value         := FDataFim;
    FQueryHistorico.Post;
    FQueryHistorico.Connection.Close;
- except on e:exception do
-  raise Exception.Create('Falha ao atualizar download no banco de dados:'+e.Message);
+ except on Erro:exception do
+  raise Exception.Create('Falha ao atualizar download no banco de dados:'+Erro.Message);
  end;
 end;
 
@@ -315,24 +324,28 @@ begin
  Proc_CriarMecanismoGet;
  FDataIni := Now;
  try
-  try
    if not DirectoryExists(FLocalArquivo) then
           CreateDir(FLocalArquivo);
 
    FArquivoDown := TFileStream.Create(FLocalArquivo+'\Download_'+FormatDateTime('yyyymmddhhmmsszzz',Now) +
                                       ExtractFileExt(FURL),
                                       fmCreate);
-
    FIdHTTP.Get(FURL,
                FArquivoDown);
-  except on e:exception do
-   raise Exception.Create('Falha ao realizar o download:'+E.Message);
+
+
+   Proc_LimparObjetos;
+   FDataFim := Date;
+   Proc_AtualizaDadosBanco;
+
+
+ except on Erro:exception do
+  begin
+   Proc_LimparObjetos;
+   Proc_MensagemAlerta('Falha ao realizar o download:'+Erro.Message);
+  end;
   end
- finally
-  Proc_LimparObjetos;
-  FDataFim := Date;
-  Proc_AtualizaDadosBanco;
- end;
+
 end;
 
 end.

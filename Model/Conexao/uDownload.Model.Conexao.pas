@@ -47,6 +47,7 @@ end;
 
 function TModel_Conexao.Fn_GetConnectionFD: TFDConnection;
 begin
+ try
  if not Assigned(FConexao) then
   begin
    FConexao                  := TFDConnection.Create(nil);
@@ -56,6 +57,9 @@ begin
    FConexao.Connected;
   end;
  Result := FConexao;
+ except on Erro:exception do
+  raise Exception.Create('Falha ao conectar com o banco de dados: '+Erro.Message);
+ end;
 end;
 
 class function TModel_Conexao.New: iModel_Conexao;
