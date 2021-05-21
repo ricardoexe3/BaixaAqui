@@ -18,6 +18,8 @@ uses
   System.Classes,
   System.Threading;
 type
+TMensagem = (tpAlert, tpQuestion);
+
 TModel_ProcessarDownload = class(TInterfacedObject,iModel_ProcessarDownload)
 private
  FParentConexao:iModel_Conexao;
@@ -38,7 +40,7 @@ private
  procedure Proc_CriarMecanismoGet;
  procedure Proc_CriarQuery;
  procedure Proc_LimparObjetos;
- procedure Proc_MensagemAlerta(value:string);
+ function Fn_MensagemAlerta(value:string; tipoMensagem:TMensagem):Boolean;
  procedure Proc_ProcessarDownload;
  function Fn_RetornaPercentual:Double;
  function Fn_Validacoes:Boolean;
@@ -83,7 +85,6 @@ begin
 
  if Assigned(FThreadIniciaDownload) then
   begin
-   FThreadIniciaDownload.FreeOnTerminate := True;
    TerminateThread(FThreadIniciaDownload.Handle, 0);
   end;
   inherited;
@@ -97,19 +98,32 @@ begin
   FreeAndNil(FdAntiFreeze);
 end;
 
-procedure TModel_ProcessarDownload.Proc_MensagemAlerta(value: string);
+function TModel_ProcessarDownload.Fn_MensagemAlerta(value:string; tipoMensagem:TMensagem):Boolean;
 begin
- if Assigned(FThreadIniciaDownload) then
-  begin
-   FThreadIniciaDownload.Synchronize(FThreadIniciaDownload.CurrentThread,
-    procedure
-    begin
-     MessageDlg(value,mtInformation,[mbOk], 0, mbOk);
-    end);
-   Exit;
-  end;
+ Result := False;
 
-  MessageDlg(value,mtInformation, [mbOk], 0, mbOk);
+ case tipoMensagem of
+
+ tpAlert: begin
+           if Assigned(FThreadIniciaDownload) then
+            begin
+             FThreadIniciaDownload.Synchronize(FThreadIniciaDownload.CurrentThread,
+              procedure
+              begin
+               MessageDlg(value,mtInformation,[mbOk], 0, mbOk);
+              end);
+             Exit;
+            end;
+            MessageDlg(value,mtInformation, [mbOk], 0, mbOk);
+          end;
+
+  tpQuestion: begin
+
+              end;
+ end;
+
+
+
 end;
 
 procedure TModel_ProcessarDownload.Proc_CriarQuery;
@@ -154,6 +168,8 @@ begin
                                                         begin
                                                          Proc_ProcessarDownload;
                                                         end);
+ FThreadIniciaDownload.Priority        := tpHigher;
+ FThreadIniciaDownload.FreeOnTerminate := True;
  FThreadIniciaDownload.Start;
 end;
 
@@ -164,21 +180,19 @@ begin
  Result := False;
  if Assigned(FThreadIniciaDownload) and Assigned(FIdHTTP) then
   begin
-   FThreadIniciaDownload.Synchronize(
-   FThreadIniciaDownload.CurrentThread,
-                                     procedure
-                                     begin
-                                      Percent := Fn_RetornaPercentual;
-                                      FThreadIniciaDownload.Suspended := true;
-                                      if MessageDlg('Atenção Download em andamento '+FormatFloat('##',Percent)+'% concluído' + #13 +
-                                                    'Deseja cancelar?', mtConfirmation,
-                                                    [mbYes, mbNo], 0, mbYes) <> mrYes
-                                      then
-                                      begin
-                                       FThreadIniciaDownload.Suspended := False;
-                                       Exit;
-                                      end;
-                                     end);
+
+    Percent := Fn_RetornaPercentual;
+    FThreadIniciaDownload.Suspended := true;
+
+    if MessageDlg('Atenção Download em andamento '+FormatFloat('##',Percent)+'% concluído' + #13 +
+                  'Deseja cancelar?', mtConfirmation,
+                  [mbYes, mbNo], 0, mbYes) <> mrYes
+    then
+    begin
+     FThreadIniciaDownload.Suspended := False;
+     Exit;
+    end;
+
    Result := FThreadIniciaDownload.Suspended;
    if Result then
     begin
