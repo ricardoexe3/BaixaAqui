@@ -86,7 +86,7 @@ begin
 
  if Assigned(FThreadIniciaDownload) then
   begin
-   FThreadIniciaDownload.Free;
+  // FThreadIniciaDownload.Free;
    TerminateThread(FThreadIniciaDownload.Handle, 0);
   end;
   inherited;
@@ -94,7 +94,7 @@ end;
 
 procedure TModel_ProcessarDownload.Proc_LimparObjetos;
 begin
-  if Assigned(FArquivoDown) then FreeAndNil(FArquivoDown);
+  // if Assigned(FArquivoDown) then FreeAndNil(FArquivoDown);
   if Assigned(FIdHTTP) then
    begin
    FIdHTTP.Disconnect;
@@ -299,6 +299,9 @@ begin
  try
    if not Assigned(FQueryHistorico) then
           Proc_CriarQuery;
+
+   if not Assigned(FParentConexao.Fn_GetConnectionFD) then
+          Exit;
 
    FQueryHistorico.Close;
    FQueryHistorico.SQL.Text := ' Select' + #13 +

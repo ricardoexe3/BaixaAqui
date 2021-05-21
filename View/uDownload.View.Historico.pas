@@ -44,7 +44,9 @@ end;
 
 procedure TFrmHistorico.BtnRepetirClick(Sender: TObject);
 begin
- FrmMain.EdtLink.Text := DsHistorico.DataSet.FieldByName('URL').Text;
+ if DsHistorico.DataSet.RecordCount > 0 then
+    FrmMain.EdtLink.Text := DsHistorico.DataSet.FieldByName('URL').Text;
+
  FrmMain.BtnIniciar.Click;
  BtnFechar.Click;
 end;

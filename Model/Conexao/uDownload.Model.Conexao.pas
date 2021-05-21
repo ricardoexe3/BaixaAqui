@@ -46,8 +46,16 @@ begin
 end;
 
 function TModel_Conexao.Fn_GetConnectionFD: TFDConnection;
+var
+ LocalBanco :string;
 begin
  try
+  LocalBanco := 'C:\Prova SoftPlan\Prova SoftPlan\Model\Banco\BancoProva.sdb';
+  if not FileExists(LocalBanco) then
+   begin
+    Exit;
+   end;
+
  if not Assigned(FConexao) then
   begin
    FConexao                  := TFDConnection.Create(nil);
