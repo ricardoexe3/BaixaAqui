@@ -82,9 +82,11 @@ destructor TModel_ProcessarDownload.Destroy;
 begin
  FreeAndNil(FQueryHistorico);
  Proc_LimparObjetos;
+ if Assigned(FdAntiFreeze) then FreeAndNil(FdAntiFreeze);
 
  if Assigned(FThreadIniciaDownload) then
   begin
+   FThreadIniciaDownload.Free;
    TerminateThread(FThreadIniciaDownload.Handle, 0);
   end;
   inherited;
@@ -92,10 +94,13 @@ end;
 
 procedure TModel_ProcessarDownload.Proc_LimparObjetos;
 begin
-  FreeAndNil(FArquivoDown);
-  FreeAndNil(FIdHTTP);
-  FreeAndNil(FIdSSLIOHandlerSocketOpenSSL);
-  FreeAndNil(FdAntiFreeze);
+  if Assigned(FArquivoDown) then FreeAndNil(FArquivoDown);
+  if Assigned(FIdHTTP) then
+   begin
+   FIdHTTP.Disconnect;
+   FreeAndNil(FIdHTTP);
+  end;
+  if Assigned(FIdSSLIOHandlerSocketOpenSSL) then FreeAndNil(FIdSSLIOHandlerSocketOpenSSL);
 end;
 
 function TModel_ProcessarDownload.Fn_MensagemAlerta(value:string; tipoMensagem:TMensagem):Boolean;
@@ -205,16 +210,10 @@ begin
    Result := FThreadIniciaDownload.Suspended;
    if Result then
     begin
-     FThreadIniciaDownload.Synchronize(FThreadIniciaDownload.CurrentThread,
-                                       procedure
-                                       begin
-                                       FAtualizaProgressoEvent(0, 0);
-                                       end
-                                       );
-
+     FThreadIniciaDownload.Suspended := False;
      FThreadIniciaDownload.FreeOnTerminate := True;
      TerminateThread(FThreadIniciaDownload.Handle, 0);
-     Proc_LimparObjetos;
+     FAtualizaProgressoEvent(0, 0);
     end;
     Exit;
   end;
@@ -363,14 +362,12 @@ begin
                FArquivoDown);
 
 
-   Proc_LimparObjetos;
    FDataFim := Date;
    Proc_AtualizaDadosBanco;
-
+   FArquivoDown.Free;
 
  except on Erro:exception do
   begin
-   Proc_LimparObjetos;
    Fn_MensagemAlerta('Falha ao realizar o download:'+Erro.Message,tpAlert);
   end;
   end
