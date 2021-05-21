@@ -1,0 +1,50 @@
+unit uDownload.Model.Excecoes;
+
+interface
+
+uses
+  System.SysUtils,
+  Vcl.Dialogs,
+  Vcl.Forms;
+  
+ type TModel_Excecoes = class
+   private
+    FArqLog:string;
+    procedure Proc_getException(Sender:TObject; E: Exception);
+   public
+    procedure Proc_GravarLog(Dados:string);
+    constructor Create;
+    destructor Destroy; override;
+ end;
+
+ var
+ Model_Excecoes : TModel_Excecoes;
+implementation
+
+{ TModel_Excecoes }
+
+constructor TModel_Excecoes.Create;
+begin
+ FArqLog := ChangeFileExt(ParamStr(0), '.log');
+ ReportMemoryLeaksOnShutdown := True;
+ Application.OnException     := Proc_getException;
+end;
+
+destructor TModel_Excecoes.Destroy;
+begin
+
+  inherited;
+end;
+
+procedure TModel_Excecoes.Proc_getException(Sender: TObject; E: Exception);
+begin
+ MessageDlg(E.Message, mtWarning, [mbOK], 0);
+end;
+
+initialization
+ Model_Excecoes := TModel_Excecoes.Create;
+
+finalization
+ Model_Excecoes.DisposeOf;
+
+end.

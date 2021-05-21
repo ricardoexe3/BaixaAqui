@@ -1,0 +1,13 @@
+unit uDownload.Controller.Interfaces;
+
+interface
+type
+iController_ProcessarDownload = interface
+ ['{6584446A-1BBD-4483-B401-1E3F9FFACE59}']
+
+end;
+
+
+implementation
+
+end.

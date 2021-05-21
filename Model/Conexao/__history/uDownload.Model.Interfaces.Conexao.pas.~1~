@@ -1,0 +1,7 @@
+unit uDownload.Model.Interfaces.Conexao;
+
+interface
+
+implementation
+
+end.

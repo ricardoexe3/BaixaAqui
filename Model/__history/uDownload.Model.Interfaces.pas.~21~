@@ -1,0 +1,24 @@
+unit uDownload.Model.Interfaces;
+
+interface
+
+uses
+  Data.DB;
+type
+ TAtualizaProgressoEvent = procedure(MaxValue, Position:int64) of object;
+
+ iModel_ProcessarDownload = interface
+  ['{B373593A-B976-4473-8A24-ACA273CF6B06}']
+
+ function Fn_ExibirMensagemProgresso:iModel_ProcessarDownload;
+ function Fn_GetDataSet:TDataSet;
+ function Fn_IniciarDownload:iModel_ProcessarDownload;
+ function Fn_PararDownload:iModel_ProcessarDownload;
+ function Fn_SetLocalArquivo(LocalArquivo:string):iModel_ProcessarDownload;
+ function Fn_SetProgresso(Progresso:TAtualizaProgressoEvent):iModel_ProcessarDownload;
+ function Fn_SetURL(URL:string):iModel_ProcessarDownload;
+end;
+
+implementation
+
+end.

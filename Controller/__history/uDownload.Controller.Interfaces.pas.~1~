@@ -1,0 +1,7 @@
+unit uDownload.Controller.Interfaces;
+
+interface
+
+implementation
+
+end.
