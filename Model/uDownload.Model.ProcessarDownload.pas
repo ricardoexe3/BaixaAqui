@@ -305,6 +305,8 @@ begin
 
    if not Assigned(FParentConexao.Fn_GetConnectionFD) then
           Exit;
+   FQueryHistorico.Connection.Close;
+   FQueryHistorico.Connection.Open;
 
    FQueryHistorico.Close;
    FQueryHistorico.SQL.Text := ' Select' + #13 +
