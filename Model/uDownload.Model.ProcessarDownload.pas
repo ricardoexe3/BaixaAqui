@@ -183,7 +183,6 @@ begin
                                                         begin
                                                          Proc_ProcessarDownload;
                                                         end);
- FThreadIniciaDownload.Priority        := tpHigher;
  FThreadIniciaDownload.FreeOnTerminate := True;
  FThreadIniciaDownload.Start;
 end;
@@ -214,6 +213,8 @@ begin
      FThreadIniciaDownload.FreeOnTerminate := True;
      TerminateThread(FThreadIniciaDownload.Handle, 0);
      FAtualizaProgressoEvent(0, 0);
+     FMaxValue := 0;
+     FPosition := 0;
     end;
     Exit;
   end;
@@ -258,7 +259,9 @@ begin
    Exit;
   end;
 
- if Assigned(FThreadIniciaDownload) and Assigned(FIdHTTP) then
+ if Assigned(FThreadIniciaDownload) and Assigned(FIdHTTP)
+  and (FMaxValue>0)
+  then
   begin
    Result := True;
    Fn_MensagemAlerta('Há um download em andamento!',tpAlert);
@@ -368,7 +371,7 @@ begin
    FDataFim := Date;
    Proc_AtualizaDadosBanco;
    FArquivoDown.Free;
-
+   Proc_LimparObjetos;
  except on Erro:exception do
   begin
    Fn_MensagemAlerta('Falha ao realizar o download:'+Erro.Message,tpAlert);

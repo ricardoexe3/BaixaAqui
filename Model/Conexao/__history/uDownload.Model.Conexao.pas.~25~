@@ -15,12 +15,12 @@ uses
   FireDAC.Stan.Async,
   FireDAC.Phys,
   FireDAC.VCLUI.Wait,
-  FireDAC.Comp.Client,
   FireDAC.DApt,
   FireDAC.Phys.SQLite;
  type
  TModel_Conexao = class(TInterfacedObject,iModel_Conexao)
   private
+   FConexao:TFDConnection;
   public
    function Fn_GetConnectionFD:TFDConnection;
    class function New:iModel_Conexao;
@@ -28,6 +28,9 @@ uses
    destructor Destroy; override;
  end;
 implementation
+
+uses
+  System.SysUtils;
 
 { TModel_Conexao }
 
@@ -38,12 +41,22 @@ end;
 
 destructor TModel_Conexao.Destroy;
 begin
-
+ FreeandNil(FConexao);
   inherited;
 end;
 
 function TModel_Conexao.Fn_GetConnectionFD: TFDConnection;
+var
+ LocalBanco :string;
 begin
+ try
+  LocalBanco := 'C:\Prova SoftPlan\Prova SoftPlan\Model\Banco\BancoProva.sdb';
+  if not FileExists(LocalBanco) then
+   begin
+    FConexao := nil;
+    Exit;
+   end;
+
  if not Assigned(FConexao) then
   begin
    FConexao                  := TFDConnection.Create(nil);
@@ -52,6 +65,10 @@ begin
    FConexao.Params.Database  := 'C:\Prova SoftPlan\Prova SoftPlan\Model\Banco\BancoProva.sdb';
    FConexao.Connected;
   end;
+ Result := FConexao;
+ except on Erro:exception do
+  raise Exception.Create('Falha ao conectar com o banco de dados: '+Erro.Message);
+ end;
 end;
 
 class function TModel_Conexao.New: iModel_Conexao;

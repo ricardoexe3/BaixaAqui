@@ -51,12 +51,7 @@ var
 begin
  try
   LocalBanco := 'C:\Prova SoftPlan\Prova SoftPlan\Model\Banco\BancoProva.sdb';
-  if not FileExists(LocalBanco) then
-   begin
-    Exit;
-   end;
-
- if not Assigned(FConexao) then
+ if not Assigned(FConexao) and FileExists(LocalBanco) then
   begin
    FConexao                  := TFDConnection.Create(nil);
    FConexao.LoginPrompt      := False;

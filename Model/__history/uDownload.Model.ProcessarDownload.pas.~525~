@@ -86,6 +86,7 @@ begin
 
  if Assigned(FThreadIniciaDownload) then
   begin
+  // FThreadIniciaDownload.Free;
    TerminateThread(FThreadIniciaDownload.Handle, 0);
   end;
   inherited;
@@ -93,7 +94,7 @@ end;
 
 procedure TModel_ProcessarDownload.Proc_LimparObjetos;
 begin
-  if Assigned(FArquivoDown) then FreeAndNil(FArquivoDown);
+  // if Assigned(FArquivoDown) then FreeAndNil(FArquivoDown);
   if Assigned(FIdHTTP) then
    begin
    FIdHTTP.Disconnect;
@@ -209,17 +210,10 @@ begin
    Result := FThreadIniciaDownload.Suspended;
    if Result then
     begin
-     Proc_LimparObjetos;
-//     FThreadIniciaDownload.Suspended := False;
-//     FThreadIniciaDownload.Synchronize(FThreadIniciaDownload.CurrentThread,
-//                                       procedure
-//                                       begin
-//                                     //
-//                                       end
-//                                       );
-     FAtualizaProgressoEvent(0, 0);
+     FThreadIniciaDownload.Suspended := False;
      FThreadIniciaDownload.FreeOnTerminate := True;
      TerminateThread(FThreadIniciaDownload.Handle, 0);
+     FAtualizaProgressoEvent(0, 0);
     end;
     Exit;
   end;
@@ -306,6 +300,9 @@ begin
    if not Assigned(FQueryHistorico) then
           Proc_CriarQuery;
 
+   if not Assigned(FParentConexao.Fn_GetConnectionFD) then
+          Exit;
+
    FQueryHistorico.Close;
    FQueryHistorico.SQL.Text := ' Select' + #13 +
                                ' Max(CODIGO) as Codigo' + #13 +
@@ -368,14 +365,12 @@ begin
                FArquivoDown);
 
 
-   Proc_LimparObjetos;
    FDataFim := Date;
    Proc_AtualizaDadosBanco;
-
+   FArquivoDown.Free;
 
  except on Erro:exception do
   begin
-   Proc_LimparObjetos;
    Fn_MensagemAlerta('Falha ao realizar o download:'+Erro.Message,tpAlert);
   end;
   end

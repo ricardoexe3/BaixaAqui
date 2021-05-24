@@ -47,7 +47,7 @@ end;
 function TModel_Historico.Fn_CarregarHistorico: iModel_Historico;
 begin
  Result := Self;
- if Assigned(FQueryHistorico) and not (FQueryHistorico.Connection.LoginPrompt) then
+ if Assigned(FQueryHistorico) and Assigned(FQueryHistorico.Connection) then
   begin
    FQueryHistorico.Close;
    FQueryHistorico.SQL.Text := ' Select' + #13 +

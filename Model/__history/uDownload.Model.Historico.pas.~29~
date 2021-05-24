@@ -21,6 +21,9 @@ uses
    destructor Destroy; override;
  end;
 implementation
+
+uses
+  System.SysUtils;
 { TModel_Historico }
 
 constructor TModel_Historico.Create;
@@ -37,18 +40,30 @@ end;
 
 destructor TModel_Historico.Destroy;
 begin
- FreeAndNil();
+ FreeAndNil(FQueryHistorico);
   inherited;
 end;
 
 function TModel_Historico.Fn_CarregarHistorico: iModel_Historico;
 begin
-
+ Result := Self;
+ if Assigned(FQueryHistorico) and not (FQueryHistorico.Connection.LoginPrompt) then
+  begin
+   FQueryHistorico.Close;
+   FQueryHistorico.SQL.Text := ' Select' + #13 +
+                               ' CODIGO,' + #13 +
+                               ' URL,' + #13 +
+                               ' DATAINICIO,' + #13 +
+                               ' DATAFIM' + #13 +
+                               ' From LOGDOWNLOAD' + #13 +
+                               ' ORDER BY DATAINICIO';
+   FQueryHistorico.Open;
+  end;
 end;
 
 function TModel_Historico.Fn_GetDataSet: TDataSet;
 begin
-
+ Result := FQueryHistorico;
 end;
 
 class function TModel_Historico.New: iModel_Historico;
