@@ -1,8 +1,8 @@
 # BaixaAqui
 
-Objetivo do projeto:
+## Objetivo do projeto:
 
-Protótipo responsável por realizar um download a partir de um link informado pelo usuário, sendo possível acompanhar o percentual do download, exibir progresso atual ou cancelar o download em andamento.  
+- Protótipo responsável por realizar um download a partir de um link informado pelo usuário, sendo possível acompanhar o percentual do download, exibir progresso atual ou cancelar o download em andamento.  
 
 **Principais funcionalidades:**
 
